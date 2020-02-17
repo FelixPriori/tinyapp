@@ -31,9 +31,25 @@ app.get('/urls', (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_show", templateVars);
+  if (urlDatabase[req.params.shortURL]){
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+    res.render("urls_show", templateVars);
+  } else {
+    res.sendStatus(404).send('Not Found');
+  }
 });
+
+app.get("/u/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const longURL = templateVars.longURL;
+  res.redirect(longURL);
+});
+
+/*  TODO :
+What would happen if a client requests a non-existent shortURL?
+What happens to the urlDatabase when the server is restarted?
+What type of status code do our redirects have? What does this status code mean?
+*/
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
