@@ -10,10 +10,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
-
-
-
-
 // object database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -82,6 +78,15 @@ app.get("/register", (req, res) => {
     longURL: urlDatabase[req.params.shortURL] };
   res.render("register", templateVars);
 });
+
+app.get("/login", (req, res) => {
+  const user = users[req.cookies["id"]];
+  let templateVars = {
+    user,
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL] };
+  res.render("login", templateVars);
+})
 
 // home page, redirects to /urls for now
 app.get("/", (req, res) => {
