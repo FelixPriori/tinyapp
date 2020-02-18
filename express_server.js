@@ -1,20 +1,25 @@
+// setting up the file
 const express = require("express");
 const bodyParser = require("body-parser");
+const uuid = require("uuid");
+  //const id = uuid().substr(0, 6);
 const app = express();
 const PORT = 8080;
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
+// object database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+// home page, redirects to /urls for now
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/urls/");
 });
 
+//
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
@@ -28,6 +33,11 @@ app.post("/urls", (req, res) => {
 app.get('/urls', (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+app.post('/urls/:shortURL/update', (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.editLongUrl;
+  res.redirect('/urls/' + req.params.shortURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -46,7 +56,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-app.post("/urls/:shortURL/edit", (req, res) => {
+app.get("/urls/:shortURL/edit", (req, res) => {
   res.redirect('/urls/' + req.params.shortURL);
 });
 
@@ -56,8 +66,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
   res.redirect('/urls');
 });
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
