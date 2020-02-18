@@ -16,6 +16,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// user database
+const users = { 
+  "20j4us": {
+    id: "20j4us", 
+    email: "felix@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "h3ks3s": {
+    id: "h3ks3s", 
+    email: "priori@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
 // renders the 'create new URL page'
 app.get("/urls/new", (req, res) => {
   let templateVars = {
@@ -52,6 +66,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+// renders /register page with templateVars
 app.get("/register", (req, res) => {
   let templateVars = {
     username: req.cookies["username"],
@@ -120,6 +135,47 @@ app.post('/login', (req, res) => {
 // clicking logout will sign out user by clearing cookies.
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
+  res.redirect('/urls');
+});
+
+/*
+const users = { 
+  "20j4us": {
+    id: "20j4us", 
+    email: "felix@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "h3ks3s": {
+    id: "h3ks3s", 
+    email: "priori@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+*/
+
+const addNewUser = (userData) => {
+  // random string of length 6 is set to id
+  const id = generateRandomString();
+  // newUser is declared as an object with id, email, password
+  const newUser = {
+    id,
+    email: userData.email,
+    password: userData.password
+  }
+  // this newUser is added to our db of users
+  users[id] = newUser;
+  // id is returned to be used for cookies
+  return id;
+}
+
+// registers user to db and sends cookie
+app.post('/register', (req, res) => {
+  // entered data is set to variable userData
+  const userData = req.body;
+  // user data is passed to function addNewUser, which adds to db, and returns the id
+  // id is then set to to the cookie
+  res.cookie('id', addNewUser(userData));
+  // lastly, page is redirected to urls
   res.redirect('/urls');
 });
 
