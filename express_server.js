@@ -10,6 +10,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
+
+
+
+
 // object database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -32,8 +36,9 @@ const users = {
 
 // renders the 'create new URL page'
 app.get("/urls/new", (req, res) => {
+  const user = users[req.cookies["id"]];
   let templateVars = {
-    username: req.cookies["username"],
+    user
   }
   res.render("urls_new", templateVars);
 });
@@ -41,8 +46,9 @@ app.get("/urls/new", (req, res) => {
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
   // sets the database to templateVars variable
+  const user = users[req.cookies["id"]];
   let templateVars = { 
-    username: req.cookies["username"], 
+    user, 
     urls: urlDatabase 
   };
   // renders the file urls_index with the templateVars
@@ -54,8 +60,9 @@ app.get("/urls/:shortURL", (req, res) => {
   // checks if the shortURL exists
   if (urlDatabase[req.params.shortURL]){
     // sets the database to templateVars variable
+    const user = users[req.cookies["id"]];
     let templateVars = {
-      username: req.cookies["username"],
+      user,
       shortURL: req.params.shortURL, 
       longURL: urlDatabase[req.params.shortURL] };
     // renders the urls_show file with templateVars
@@ -68,8 +75,9 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // renders /register page with templateVars
 app.get("/register", (req, res) => {
+  const user = users[req.cookies["id"]];
   let templateVars = {
-    username: req.cookies["username"],
+    user,
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] };
   res.render("register", templateVars);
@@ -138,21 +146,7 @@ app.post('/logout', (req, res) => {
   res.redirect('/urls');
 });
 
-/*
-const users = { 
-  "20j4us": {
-    id: "20j4us", 
-    email: "felix@example.com", 
-    password: "purple-monkey-dinosaur"
-  },
- "h3ks3s": {
-    id: "h3ks3s", 
-    email: "priori@example.com", 
-    password: "dishwasher-funk"
-  }
-}
-*/
-
+// helper function, adds new user to db, returns id
 const addNewUser = (userData) => {
   // random string of length 6 is set to id
   const id = generateRandomString();
@@ -161,22 +155,45 @@ const addNewUser = (userData) => {
     id,
     email: userData.email,
     password: userData.password
-  }
+  };
   // this newUser is added to our db of users
   users[id] = newUser;
   // id is returned to be used for cookies
   return id;
 }
 
+// function which returns false if email already exists
+const checkEmail = email => {
+  // loops through users db
+  for (const user in users) {
+    if (users[user].email === email){
+      return false;
+    }
+  }
+  return true;
+}
+
 // registers user to db and sends cookie
 app.post('/register', (req, res) => {
-  // entered data is set to variable userData
-  const userData = req.body;
-  // user data is passed to function addNewUser, which adds to db, and returns the id
-  // id is then set to to the cookie
-  res.cookie('id', addNewUser(userData));
-  // lastly, page is redirected to urls
-  res.redirect('/urls');
+  // checking if fields have been populated correctly
+  if (req.body.email && req.body.password) {
+    // entered data is set to variable userData
+    const userData = req.body;
+    // checks if email already exists
+    if (checkEmail(userData.email)) {
+      // user data is passed to function addNewUser, which adds to db, and returns the id
+      // id is then set to to the cookie
+      res.cookie('id', addNewUser(userData));
+      // lastly, page is redirected to urls
+      res.redirect('/urls');
+    } else {
+      // send status 400 if email already exists
+      res.sendStatus(400).send('Bad Request');
+    }
+  } else {
+    // send status 400 if email or password empty
+    res.sendStatus(400).send('Bad Request');
+  }
 });
 
 // server listen

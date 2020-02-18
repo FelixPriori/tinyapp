@@ -11,10 +11,10 @@
       </div>
     </div>
     <div class="collapse navbar-collapse d-flex flex-row-reverse">
-      <% if (username) { %>
+      <% if (user) { %>
         <form class="form-inline p-2" action="/logout" method="POST">
           <div class="form-group mb-2">
-            <h5 style="margin-right: 1em" >Logged in as: <%= username %> </h5>
+            <h5 style="margin-right: 1em" >Logged in as: <%= user.email %> </h5>
             <button type="submit" class="btn btn-outline-dark">Logout</button>
           </div>
         </form>
