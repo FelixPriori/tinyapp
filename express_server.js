@@ -1,11 +1,13 @@
 // setting up the file
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 const uuid = require("uuid");
   //const id = uuid().substr(0, 6);
 const app = express();
 const PORT = 8080;
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
 // object database
@@ -22,7 +24,10 @@ app.get("/urls/new", (req, res) => {
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
   // sets the database to templateVars variable
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { 
+    username: req.cookies["username"], 
+    urls: urlDatabase 
+  };
   // renders the file urls_index with the templateVars
   res.render("urls_index", templateVars);
 });
@@ -32,7 +37,10 @@ app.get("/urls/:shortURL", (req, res) => {
   // checks if the shortURL exists
   if (urlDatabase[req.params.shortURL]){
     // sets the database to templateVars variable
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+    let templateVars = {
+      username: req.cookies["username"],
+      shortURL: req.params.shortURL, 
+      longURL: urlDatabase[req.params.shortURL] };
     // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
@@ -90,6 +98,16 @@ app.post('/urls/:shortURL/update', (req, res) => {
   urlDatabase[req.params.shortURL] = req.body.editLongUrl;
   // redirect to the shortURL page
   res.redirect('/urls/' + req.params.shortURL);
+});
+
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
 });
 
 // server listen
