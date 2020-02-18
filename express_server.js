@@ -30,13 +30,18 @@ const users = {
   }
 }
 
+
 // renders the 'create new URL page'
 app.get("/urls/new", (req, res) => {
-  const user = users[req.cookies["id"]];
-  let templateVars = {
-    user
+  if (req.cookies['id']) {
+    const user = users[req.cookies["id"]];
+    let templateVars = {
+      user
+    }
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect('/login');
   }
-  res.render("urls_new", templateVars);
 });
 
 // renders the 'My URLs' page
