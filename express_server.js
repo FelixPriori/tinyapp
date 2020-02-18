@@ -14,35 +14,25 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// home page, redirects to /urls for now
-app.get("/", (req, res) => {
-  res.redirect("/urls/");
-});
-
-//
+// renders the 'create new URL page'
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.post("/urls", (req, res) => {
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect('/urls/' + shortURL);
-});
-
 app.get('/urls', (req, res) => {
+  // sets the database to templateVars variable
   let templateVars = { urls: urlDatabase };
+  // renders the file urls_index with the templateVars
   res.render("urls_index", templateVars);
 });
 
-app.post('/urls/:shortURL/update', (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.editLongUrl;
-  res.redirect('/urls/' + req.params.shortURL);
-});
-
+// renders the urls_show page
 app.get("/urls/:shortURL", (req, res) => {
+  // checks if the shortURL exists
   if (urlDatabase[req.params.shortURL]){
+    // sets the database to templateVars variable
     let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+    // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
     // TODO : render an actual page (stretch)
@@ -50,16 +40,32 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+// home page, redirects to /urls for now
+app.get("/", (req, res) => {
+  res.redirect("/urls/");
+});
+
+// redirects the shortUrl to the longUrl (this is where the magic happens)
 app.get("/u/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  const longURL = templateVars.longURL;
+  // links the shortURL and longURL together
+  let linkedUrls = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  // extract the longURL, puts it in its own variable
+  const longURL = linkedUrls.longURL;
+  // redirects to the longUrl
   res.redirect(longURL);
 });
 
+// by pressing the edit button on the /urls page, redirects to the url's page
 app.get("/urls/:shortURL/edit", (req, res) => {
   res.redirect('/urls/' + req.params.shortURL);
 });
 
+// shows the database as a JSON object in browser
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+// by pressing the delete button on the /urls page, deletes the url from database
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL]){
     delete urlDatabase[req.params.shortURL];
@@ -67,24 +73,37 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+// new shortURL creation
+app.post("/urls", (req, res) => {
+  //creates new short URL with a randomly generated string
+  const shortURL = generateRandomString();
+  // adds the long url submited to the object as value with the short url as key.
+  urlDatabase[shortURL] = req.body.longURL;
+  // redirects to a page with new short url
+  res.redirect('/urls/' + shortURL);
+});
+
+// where the actual editing of the shortURL happens
+app.post('/urls/:shortURL/update', (req, res) => {
+  // typed modified longURL set to existing shortURL
+  urlDatabase[req.params.shortURL] = req.body.editLongUrl;
+  // redirect to the shortURL page
+  res.redirect('/urls/' + req.params.shortURL);
+});
+
+// server listen
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// returns a random alpha-numeric string from list
 const pickAlphaNum = () => {
   const alphaNums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
   const randomNum = Math.floor(Math.random() * alphaNums.length);
   return alphaNums[randomNum];
 }
 
+// returns a generated alpha-numeric string of length 6
 function generateRandomString() {
   let output = '';
   for (let i = 1; i <= 6; i++) {
