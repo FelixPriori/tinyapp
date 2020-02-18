@@ -103,11 +103,13 @@ app.post('/urls/:shortURL/update', (req, res) => {
   res.redirect('/urls/' + req.params.shortURL);
 });
 
+// added cookies to login button, saves as username
 app.post('/login', (req, res) => {
   res.cookie('username', req.body.username);
   res.redirect('/urls');
 });
 
+// clicking logout will sign out user by clearing cookies.
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
