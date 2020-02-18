@@ -65,7 +65,7 @@ app.get("/urls/:shortURL", (req, res) => {
     res.render("urls_show", templateVars);
   } else {
     // TODO : render an actual page (stretch)
-    res.sendStatus(404).send('Not Found');
+    res.status(404).send('Not Found');
   }
 });
 
@@ -79,6 +79,7 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
+// renders /login page with templateVars
 app.get("/login", (req, res) => {
   const user = users[req.cookies["id"]];
   let templateVars = {
@@ -155,15 +156,39 @@ app.post('/urls/:shortURL/update', (req, res) => {
   res.redirect('/urls/' + req.params.shortURL);
 });
 
-// added cookies to login button, saves as username
+// function uses email address to return the user from users db
+const fetchUser = (email) => {
+  for (let user in users) {
+    if (users[user].email === email) {
+      return users[user];
+    }
+  }
+  return false;
+};
+
+// login with user email & password
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
+  // fetch user with email
+  const email = req.body.email;
+  const user = fetchUser(email);
+  if (user) {
+    // if user exists, check user password
+    const password = req.body.password;
+    if (user.password === password) {
+      // if password is good, assign cookie with user.id
+      res.cookie('id', user.id);
+      res.redirect('/urls');
+    } else {
+      res.status(403).send('Forbidden');
+    }
+  } else {
+    res.status(403).send('Forbidden');
+  }
 });
 
 // clicking logout will sign out user by clearing cookies.
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('id');
   res.redirect('/urls');
 });
 
@@ -192,7 +217,7 @@ const checkEmail = email => {
     }
   }
   return true;
-}
+};
 
 // registers user to db and sends cookie
 app.post('/register', (req, res) => {
@@ -209,11 +234,11 @@ app.post('/register', (req, res) => {
       res.redirect('/urls');
     } else {
       // send status 400 if email already exists
-      res.sendStatus(400).send('Bad Request');
+      res.status(400).send('Bad Request');
     }
   } else {
     // send status 400 if email or password empty
-    res.sendStatus(400).send('Bad Request');
+    res.status(400).send('Bad Request');
   }
 });
 
