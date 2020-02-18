@@ -52,6 +52,14 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL] };
+  res.render("register", templateVars);
+});
+
 // home page, redirects to /urls for now
 app.get("/", (req, res) => {
   res.redirect("/urls/");
