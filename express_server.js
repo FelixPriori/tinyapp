@@ -19,6 +19,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+// renders the 'My URLs' page
 app.get('/urls', (req, res) => {
   // sets the database to templateVars variable
   let templateVars = { urls: urlDatabase };
