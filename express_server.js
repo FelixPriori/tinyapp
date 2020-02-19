@@ -86,9 +86,8 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const user = users[req.cookies["id"]];
   let templateVars = {
-    user,
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]['longURL'] };
+    user
+  };
   res.render("login", templateVars);
 })
 
