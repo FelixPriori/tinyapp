@@ -15,6 +15,8 @@
 
   <% if (error) { %> 
     <p class="alert alert-danger">Error: the URL that you tried to access does not exist. </p>
+  <% } else if (loginMsg) { %> 
+    <p class="alert alert-warning"> You must login or register to see short URLs </p>
   <% } %> 
 
   <main style="margin: 1em;">

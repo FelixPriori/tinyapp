@@ -13,7 +13,8 @@ app.set("view engine", "ejs");
 // object database
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "20j4us" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us" }
+  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us" },
+  "32h4o1": { longURL: "http://www.example.com", userID: "h3ks3s" }
 };
 
 const users = { 
@@ -25,7 +26,7 @@ const users = {
  "h3ks3s": {
     id: "h3ks3s", 
     email: "priori@example.com", 
-    password: "dishwasher-funk"
+    password: "asd"
   }
 }
 
@@ -48,25 +49,55 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// returns only the urls object for the specified userID
+const urlsByUser = (database, userID) => {
+  const urlsByUser = {};
+  for (const url in database) {
+    if (database[url].userID === userID) {
+      urlsByUser[url] = database[url];
+    }
+  }
+  return urlsByUser;
+};
+
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
-  // sets the database to templateVars variable
-  const user = users[req.cookies["id"]];
-  let templateVars = { 
-    error: false,
-    user, 
-    urls: urlDatabase 
-  };
-  // renders the file urls_index with the templateVars
-  res.render("urls_index", templateVars);
+  // checks if user is logged in
+  if (users[req.cookies['id']]){
+    const user = users[req.cookies["id"]];
+    const urls = urlsByUser(urlDatabase, user.id);
+    let templateVars = { 
+      error: false,
+      loginMsg: false,
+      user, 
+      urls 
+    };
+    // renders only the urls for that userID.
+    res.render("urls_index", templateVars);
+  } else {
+    // if the user is not logged in
+    const user = users[req.cookies["id"]];
+    let templateVars = { 
+      error: false,
+      loginMsg: true,
+      user, 
+      urls: undefined
+    };
+    // renders a msg telling user to login instead of urls
+    res.render("urls_index", templateVars);
+  }
 });
 
 // renders the urls_show page
 app.get("/urls/:shortURL", (req, res) => {
-  // checks if the shortURL exists
-  if (urlDatabase[req.params.shortURL]){
+  // checks if user is logged in, if so, assign user to const user
+  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  // if user is logged in, assigns its id to userID
+  const userID = user ? user.id : undefined;
+  // urls will only be defined if last two checks passed
+  const urls = urlsByUser(urlDatabase, userID);
+  if (urls[req.params.shortURL]){
     // sets the database to templateVars variable
-    const user = users[req.cookies["id"]];
     let templateVars = {
       user,
       shortURL: req.params.shortURL, 
@@ -76,11 +107,10 @@ app.get("/urls/:shortURL", (req, res) => {
     // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
-    const user = users[req.cookies["id"]];
     let templateVars = {
       error: true,
       user,
-      urls: urlDatabase 
+      urls 
     };
     res.render('urls_index', templateVars);
   }
