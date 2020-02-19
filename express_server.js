@@ -2,8 +2,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
 const uuid = require("uuid");
-  //const id = uuid().substr(0, 6);
+  // const id = uuid().substr(0, 6);
 const app = express();
 const PORT = 8080;
 app.use(bodyParser.urlencoded({extended: true}));
@@ -21,12 +22,12 @@ const users = {
   "20j4us": {
     id: "20j4us", 
     email: "felix@example.com", 
-    password: "123"
+    password: bcrypt.hashSync("123", 10)
   },
  "h3ks3s": {
     id: "h3ks3s", 
     email: "priori@example.com", 
-    password: "asd"
+    password: bcrypt.hashSync("asd", 10)
   }
 }
 
@@ -242,8 +243,7 @@ app.post('/login', (req, res) => {
   const user = fetchUser(email);
   if (user) {
     // if user exists, check user password
-    const password = req.body.password;
-    if (user.password === password) {
+    if (bcrypt.compareSync(req.body.password, user.password)) {
       // if password is good, assign cookie with user.id
       res.cookie('id', user.id);
       res.redirect('/urls');
@@ -305,7 +305,10 @@ app.post('/register', (req, res) => {
   // checking if fields have been populated correctly
   if (req.body.email && req.body.password) {
     // entered data is set to variable userData
-    const userData = req.body;
+    const userData = {
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, 10) 
+    };
     // checks if email already exists
     if (checkEmail(userData.email)) {
       // user data is passed to function addNewUser, which adds to db, and returns the id
@@ -314,7 +317,7 @@ app.post('/register', (req, res) => {
       // lastly, page is redirected to urls
       res.redirect('/urls');
     } else {
-      // send status 400 if email already exists
+      // error message if email already exists
       const user = users[req.cookies["id"]];
       let templateVars = {
         emailError: true,
@@ -324,7 +327,7 @@ app.post('/register', (req, res) => {
       res.render("register", templateVars);
     }
   } else {
-    // send status 400 if email or password empty
+    // error message if user password or email is not entered correctly
     const user = users[req.cookies["id"]];
     let templateVars = {
       userError: false,
