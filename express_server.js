@@ -90,7 +90,7 @@ app.get('/urls', (req, res) => {
 
 // renders the urls_show page
 app.get("/urls/:shortURL", (req, res) => {
-  // checks if user is logged in, if so, assign user to const user
+  // checks if user is logged in, if so, assign user object to const user
   const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
@@ -168,7 +168,13 @@ app.get("/urls.json", (req, res) => {
 
 // by pressing the delete button on the /urls page, deletes the url from database
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (urlDatabase[req.params.shortURL]){
+  // checks if user is logged in, if so, assign user object to const user
+  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  // if user is logged in, assigns its id to userID
+  const userID = user ? user.id : undefined;
+  // urls will only be defined if last two checks passed
+  const urls = urlsByUser(urlDatabase, userID);
+  if (urls[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
   }
   res.redirect('/urls');
@@ -205,9 +211,17 @@ app.post("/urls", (req, res) => {
 
 // where the actual editing of the shortURL happens
 app.post('/urls/:shortURL/update', (req, res) => {
-  // typed modified longURL set to existing shortURL
-  urlDatabase[req.params.shortURL]['longURL'] = req.body.editLongUrl;
-  // redirect to the shortURL page
+  // checks if user is logged in, if so, assign user object to const user
+  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  // if user is logged in, assigns its id to userID
+  const userID = user ? user.id : undefined;
+  // urls will only be defined if last two checks passed
+  const urls = urlsByUser(urlDatabase, userID);
+  if (urls[req.params.shortURL]) {
+    // typed modified longURL set to existing shortURL
+    urlDatabase[req.params.shortURL]['longURL'] = req.body.editLongUrl;
+    // redirect to the shortURL page
+  }
   res.redirect('/urls/' + req.params.shortURL);
 });
 
