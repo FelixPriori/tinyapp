@@ -12,6 +12,11 @@
   <header>
     <%- include('./partials/_header') %>
   </header>
+
+  <% if (error) { %> 
+    <p class="alert alert-danger">Error: the URL that you tried to access does not exist. </p>
+  <% } %> 
+
   <main style="margin: 1em;">
     <h3>My URLs</h3>
     <table class="table">

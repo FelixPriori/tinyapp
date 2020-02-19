@@ -20,7 +20,7 @@ const users = {
   "20j4us": {
     id: "20j4us", 
     email: "felix@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "123"
   },
  "h3ks3s": {
     id: "h3ks3s", 
@@ -47,6 +47,7 @@ app.get('/urls', (req, res) => {
   // sets the database to templateVars variable
   const user = users[req.cookies["id"]];
   let templateVars = { 
+    error: false,
     user, 
     urls: urlDatabase 
   };
@@ -63,12 +64,19 @@ app.get("/urls/:shortURL", (req, res) => {
     let templateVars = {
       user,
       shortURL: req.params.shortURL, 
-      longURL: urlDatabase[req.params.shortURL]['longURL'] };
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      error: false
+    };
     // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
-    // TODO : render an actual page (stretch)
-    res.status(404).send('Not Found');
+    const user = users[req.cookies["id"]];
+    let templateVars = {
+      error: true,
+      user,
+      urls: urlDatabase 
+    };
+    res.render('urls_index', templateVars);
   }
 });
 
@@ -76,9 +84,10 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/register", (req, res) => {
   const user = users[req.cookies["id"]];
   let templateVars = {
+    emailError: false,
+    fillError: false,
     user,
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]['longURL'] };
+  }
   res.render("register", templateVars);
 });
 
@@ -86,6 +95,7 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const user = users[req.cookies["id"]];
   let templateVars = {
+    error: false,
     user
   };
   res.render("login", templateVars);
@@ -148,7 +158,10 @@ app.post("/urls", (req, res) => {
   //creates new short URL with a randomly generated string
   const shortURL = generateRandomString();
   // adds the long url submited to the object as value with the short url as key.
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["id"]
+  };
   // redirects to a page with new short url
   res.redirect('/urls/' + shortURL);
 });
@@ -184,10 +197,20 @@ app.post('/login', (req, res) => {
       res.cookie('id', user.id);
       res.redirect('/urls');
     } else {
-      res.status(403).send('Forbidden');
+      const user = users[req.cookies["id"]];
+      let templateVars = {
+        error: true,
+        user
+      };
+      res.render("login", templateVars);
     }
   } else {
-    res.status(403).send('Forbidden');
+    const user = users[req.cookies["id"]];
+    let templateVars = {
+      error: true,
+      user
+    };
+    res.render("login", templateVars);
   }
 });
 
@@ -239,11 +262,23 @@ app.post('/register', (req, res) => {
       res.redirect('/urls');
     } else {
       // send status 400 if email already exists
-      res.status(400).send('Bad Request');
+      const user = users[req.cookies["id"]];
+      let templateVars = {
+        emailError: true,
+        fillError: false,
+        user
+      };
+      res.render("register", templateVars);
     }
   } else {
     // send status 400 if email or password empty
-    res.status(400).send('Bad Request');
+    const user = users[req.cookies["id"]];
+    let templateVars = {
+      userError: false,
+      fillError: true,
+      user
+      };
+    res.render("register", templateVars);
   }
 });
 

@@ -11,8 +11,15 @@
   </head>
 
   <body>
+    <header>
+      <%- include('./partials/_header') %>
+    </header>
 
-    <%- include('./partials/_header') %>
+    <% if (fillError) { %> 
+      <p class="alert alert-danger">Error: please check that you have filled the fields correctly. </p>
+    <% } else if (emailError) { %>
+      <p class="alert alert-danger">Error: this email already exists. </p>
+    <% } %>  
 
     <main style="margin: 1em;">
       <h3>Create Account</h3>

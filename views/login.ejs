@@ -11,8 +11,13 @@
   </head>
 
   <body>
+    <header>
+      <%- include('./partials/_header') %>
+    </header>
 
-    <%- include('./partials/_header') %>
+    <% if (error) { %> 
+      <p class="alert alert-danger">Error: something went wrong while attempting to log you in. Please try again. </p>
+    <% } %> 
 
     <main style="margin: 1em;">
       <h3>Login</h3>
