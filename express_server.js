@@ -12,11 +12,10 @@ app.set("view engine", "ejs");
 
 // object database
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "20j4us" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us" }
 };
 
-// user database
 const users = { 
   "20j4us": {
     id: "20j4us", 
@@ -30,8 +29,7 @@ const users = {
   }
 }
 
-
-// renders the 'create new URL page'
+// renders the 'create new URL page' only if used is logged in
 app.get("/urls/new", (req, res) => {
   if (req.cookies['id']) {
     const user = users[req.cookies["id"]];
@@ -65,7 +63,7 @@ app.get("/urls/:shortURL", (req, res) => {
     let templateVars = {
       user,
       shortURL: req.params.shortURL, 
-      longURL: urlDatabase[req.params.shortURL] };
+      longURL: urlDatabase[req.params.shortURL]['longURL'] };
     // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
@@ -80,7 +78,7 @@ app.get("/register", (req, res) => {
   let templateVars = {
     user,
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL] };
+    longURL: urlDatabase[req.params.shortURL]['longURL'] };
   res.render("register", templateVars);
 });
 
@@ -90,7 +88,7 @@ app.get("/login", (req, res) => {
   let templateVars = {
     user,
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL] };
+    longURL: urlDatabase[req.params.shortURL]['longURL'] };
   res.render("login", templateVars);
 })
 
@@ -102,7 +100,10 @@ app.get("/", (req, res) => {
 // redirects the shortUrl to the longUrl (this is where the magic happens)
 app.get("/u/:shortURL", (req, res) => {
   // links the shortURL and longURL together
-  let linkedUrls = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let linkedUrls = { 
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL]['longURL'] 
+  };
   // extract the longURL, puts it in its own variable
   const longURL = linkedUrls.longURL;
   // redirects to the longUrl
@@ -156,7 +157,7 @@ app.post("/urls", (req, res) => {
 // where the actual editing of the shortURL happens
 app.post('/urls/:shortURL/update', (req, res) => {
   // typed modified longURL set to existing shortURL
-  urlDatabase[req.params.shortURL] = req.body.editLongUrl;
+  urlDatabase[req.params.shortURL]['longURL'] = req.body.editLongUrl;
   // redirect to the shortURL page
   res.redirect('/urls/' + req.params.shortURL);
 });
