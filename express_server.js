@@ -38,7 +38,13 @@ app.get("/urls/new", (req, res) => {
     }
     res.render("urls_new", templateVars);
   } else {
-    res.redirect('/login');
+    const user = users[req.cookies["id"]];
+    let templateVars = {
+      loginError: false,
+      newUrlMsg: true,
+      user
+    };
+    res.render('login', templateVars);
   }
 });
 
@@ -95,7 +101,8 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   const user = users[req.cookies["id"]];
   let templateVars = {
-    error: false,
+    loginError: false,
+    newUrlMsg: false,
     user
   };
   res.render("login", templateVars);
@@ -199,7 +206,8 @@ app.post('/login', (req, res) => {
     } else {
       const user = users[req.cookies["id"]];
       let templateVars = {
-        error: true,
+        loginError: true,
+        newUrlMsg: false,
         user
       };
       res.render("login", templateVars);
@@ -207,7 +215,8 @@ app.post('/login', (req, res) => {
   } else {
     const user = users[req.cookies["id"]];
     let templateVars = {
-      error: true,
+      loginError: true,
+      newUrlMsg: false,
       user
     };
     res.render("login", templateVars);
