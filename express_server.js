@@ -3,10 +3,20 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session')
 const uuid = require("uuid");
   // const id = uuid().substr(0, 6);
 const app = express();
 const PORT = 8080;
+app.use(cookieSession({
+  name: 'session',
+  keys: ['user_d'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
+
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
@@ -24,7 +34,7 @@ const users = {
     email: "felix@example.com", 
     password: bcrypt.hashSync("123", 10)
   },
- "h3ks3s": {
+  "h3ks3s": {
     id: "h3ks3s", 
     email: "priori@example.com", 
     password: bcrypt.hashSync("asd", 10)
@@ -33,14 +43,14 @@ const users = {
 
 // renders the 'create new URL page' only if used is logged in
 app.get("/urls/new", (req, res) => {
-  if (req.cookies['id']) {
-    const user = users[req.cookies["id"]];
+  if (req.session.user_id) {
+    const user = users[req.session.user_id];
     let templateVars = {
       user
     }
     res.render("urls_new", templateVars);
   } else {
-    const user = users[req.cookies["id"]];
+    const user = users[req.session.user_id];
     let templateVars = {
       loginError: false,
       newUrlMsg: true,
@@ -64,8 +74,8 @@ const urlsByUser = (database, userID) => {
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
   // checks if user is logged in
-  if (users[req.cookies['id']]){
-    const user = users[req.cookies["id"]];
+  if (users[req.session.user_id]){
+    const user = users[req.session.user_id];
     const urls = urlsByUser(urlDatabase, user.id);
     let templateVars = { 
       error: false,
@@ -77,7 +87,7 @@ app.get('/urls', (req, res) => {
     res.render("urls_index", templateVars);
   } else {
     // if the user is not logged in
-    const user = users[req.cookies["id"]];
+    const user = users[req.session.user_id];
     let templateVars = { 
       error: false,
       loginMsg: true,
@@ -92,7 +102,7 @@ app.get('/urls', (req, res) => {
 // renders the urls_show page
 app.get("/urls/:shortURL", (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  const user = req.session.user_id ? users[req.session.user_id] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
@@ -119,7 +129,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // renders /register page with templateVars
 app.get("/register", (req, res) => {
-  const user = users[req.cookies["id"]];
+  const user = users[req.session.user_id];
   let templateVars = {
     emailError: false,
     fillError: false,
@@ -130,7 +140,7 @@ app.get("/register", (req, res) => {
 
 // renders /login page with templateVars
 app.get("/login", (req, res) => {
-  const user = users[req.cookies["id"]];
+  const user = users[req.session.user_id];
   let templateVars = {
     loginError: false,
     newUrlMsg: false,
@@ -170,7 +180,7 @@ app.get("/urls.json", (req, res) => {
 // by pressing the delete button on the /urls page, deletes the url from database
 app.post("/urls/:shortURL/delete", (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  const user = req.session.user_id ? users[req.session.user_id] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
@@ -204,7 +214,7 @@ app.post("/urls", (req, res) => {
   // adds the long url submited to the object as value with the short url as key.
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies["id"]
+    userID: req.session.user_id
   };
   // redirects to a page with new short url
   res.redirect('/urls/' + shortURL);
@@ -213,7 +223,7 @@ app.post("/urls", (req, res) => {
 // where the actual editing of the shortURL happens
 app.post('/urls/:shortURL/update', (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.cookies['id'] ? users[req.cookies["id"]] : undefined;
+  const user = req.session.user_id ? users[req.session.user_id] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
@@ -227,7 +237,7 @@ app.post('/urls/:shortURL/update', (req, res) => {
 });
 
 // function uses email address to return the user from users db
-const fetchUser = (email) => {
+const getUserByEmail = (email, users) => {
   for (let user in users) {
     if (users[user].email === email) {
       return users[user];
@@ -240,15 +250,15 @@ const fetchUser = (email) => {
 app.post('/login', (req, res) => {
   // fetch user with email
   const email = req.body.email;
-  const user = fetchUser(email);
+  const user = getUserByEmail(email, users);
   if (user) {
     // if user exists, check user password
     if (bcrypt.compareSync(req.body.password, user.password)) {
       // if password is good, assign cookie with user.id
-      res.cookie('id', user.id);
+      req.session.user_id = user.id;
       res.redirect('/urls');
     } else {
-      const user = users[req.cookies["id"]];
+      const user = users[req.session.user_id];
       let templateVars = {
         loginError: true,
         newUrlMsg: false,
@@ -257,7 +267,7 @@ app.post('/login', (req, res) => {
       res.render("login", templateVars);
     }
   } else {
-    const user = users[req.cookies["id"]];
+    const user = users[req.session.user_id];
     let templateVars = {
       loginError: true,
       newUrlMsg: false,
@@ -269,7 +279,7 @@ app.post('/login', (req, res) => {
 
 // clicking logout will sign out user by clearing cookies.
 app.post('/logout', (req, res) => {
-  res.clearCookie('id');
+  req.session = null;
   res.redirect('/urls');
 });
 
@@ -313,12 +323,12 @@ app.post('/register', (req, res) => {
     if (checkEmail(userData.email)) {
       // user data is passed to function addNewUser, which adds to db, and returns the id
       // id is then set to to the cookie
-      res.cookie('id', addNewUser(userData));
+      req.session.user_id = addNewUser(userData)
       // lastly, page is redirected to urls
       res.redirect('/urls');
     } else {
       // error message if email already exists
-      const user = users[req.cookies["id"]];
+      const user = users[req.session.user_id];
       let templateVars = {
         emailError: true,
         fillError: false,
@@ -328,12 +338,12 @@ app.post('/register', (req, res) => {
     }
   } else {
     // error message if user password or email is not entered correctly
-    const user = users[req.cookies["id"]];
+    const user = users[req.session.user_id];
     let templateVars = {
       userError: false,
       fillError: true,
       user
-      };
+    };
     res.render("register", templateVars);
   }
 });
