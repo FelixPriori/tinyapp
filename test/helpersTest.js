@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { urlsByUser, generateRandomString, checkEmail, getUserByEmail,pickAlphaNum } = require('../helpers.js');
+const { urlsByUser, generateRandomString, checkEmail, getUserByEmail,pickAlphaNum, isNewVisitor } = require('../helpers.js');
 
 const testUsers = {
   "6hj20A": {
@@ -15,9 +15,21 @@ const testUsers = {
 };
 
 const testDatabase = {
-  "b2xVn2": { longURL: "http://www.canada.ca", userID: "6hj20A" },
-  "9sm5xK": { longURL: "http://www.reddit.com", userID: "ls29dJ1" },
-  "32h4o1": { longURL: "http://www.example.com", userID: "6hj20A" }
+  "b2xVn2": { 
+    longURL: "http://www.canada.ca", 
+    userID: "6hj20A",
+    visitors: ['6hj20A']
+  },
+  "9sm5xK": { 
+    longURL: "http://www.reddit.com", 
+    userID: "ls29dJ1",
+    visitors: ['6hj20A']
+  },
+  "32h4o1": { 
+    longURL: "http://www.example.com", 
+    userID: "6hj20A",
+    visitors: []
+  }
 };
 
 describe('getUserByEmail', () => {
@@ -40,8 +52,16 @@ describe("urlsByUser", () => {
   it('should return an object of urls that are associated with the passed userID', () => {
     const urls = urlsByUser(testDatabase, "6hj20A");
     const expectedOutput = {
-      "32h4o1": { longURL: "http://www.example.com", userID: "6hj20A" },
-      "b2xVn2": { longURL: "http://www.canada.ca", userID: "6hj20A" },
+      "32h4o1": { 
+        longURL: "http://www.example.com", 
+        userID: "6hj20A", 
+        visitors: []
+      },
+      "b2xVn2": { 
+        longURL: "http://www.canada.ca", 
+        userID: "6hj20A", 
+        visitors: ['6hj20A']
+      },
     };
     assert.deepEqual(urls, expectedOutput);
   });
@@ -81,5 +101,17 @@ describe("checkEmail", () => {
   it('returns true if email is not in the db', () => {
     const email = 'thisemaildoesnot@exist.com';
     assert.equal(checkEmail(email, testUsers), true);
+  });
+});
+
+describe("isNewVisitor", () => {
+  it('returns false if visitor has already visited the page', () => {
+    const visitors = testDatabase['9sm5xK'].visitors;
+    assert.equal(isNewVisitor(visitors, '6hj20A'), false);
+  });
+  
+  it('returns true if visitor has never visited the page', () => {
+    const visitors = testDatabase['32h4o1'].visitors;
+    assert.equal(isNewVisitor(visitors, '6hj20A'), true);
   });
 });

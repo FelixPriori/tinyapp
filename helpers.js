@@ -46,6 +46,7 @@ const urlsByUser = (database, userID) => {
   return urlsByUser;
 };
 
+// returns true if visitor has never visited the page, else returns false
 const isNewVisitor = (visitors, userID) => {
   for (const visitor of visitors) {
     if (visitor === userID) {
