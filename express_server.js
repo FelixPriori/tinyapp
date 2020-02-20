@@ -128,13 +128,25 @@ app.get("/urls/:shortURL", (req, res) => {
     // renders the urls_show file with templateVars
     res.render("urls_show", templateVars);
   } else {
-    let templateVars = {
-      error: true,
-      loginMsg: false,
-      user,
-      urls
-    };
-    res.status(400).render('urls_index', templateVars);
+    // if user is logged in, show user urls, else show login message
+    // as well as the error message.
+    if (user) {
+      let templateVars = {
+        error: true,
+        loginMsg: false,
+        user,
+        urls
+      };
+      res.status(400).render('urls_index', templateVars);
+    } else {
+      let templateVars = {
+        error: true,
+        loginMsg: true,
+        user,
+        urls
+      };
+      res.status(400).render('urls_index', templateVars);
+    }
   }
 });
 
