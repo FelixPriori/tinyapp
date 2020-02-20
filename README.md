@@ -1,14 +1,23 @@
 # TinyApp Project
 
-TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly). It was made by Felix Rioux Sabourin in February 2020, on week 3 of [Lighthouse Labs](http://lighthouselabs.ca/)' 12 weeks web bootcamp. 
+TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly). The app generates a random string of character which it assigns to the url. When the shortened url is used, it will redirect to the long url. Additionally, the app provides some statistics about each URLs to the user. Namely, the creation date, the number of visits, and the number of unique visitors. URLs can only be edited or deleted by the user. Passwords are hashed with bcrypt and cookies are encrypted with cookie-session to ensure security for the user.
 
-## Final Product
+This app was made by Felix Rioux Sabourin in February 2020, on week 3 of [Lighthouse Labs](http://lighthouselabs.ca/)' 12 weeks web bootcamp. 
 
-![Screenshot of the URLs page](./docs/myURLs.png)
-![Screenshot of the shortened URL page](./docs/urlShow.png)
-![Screenshot of the shortened URL creation page](./docs/createNew.png)
-![Screenshot of the login page](./docs/login.png)
-![Screenshot of the registration page](./docs/register.png)
+
+### User Stories
+
+As an avid twitter poster,
+I want to be able to shorten links
+so that I can fit more non-link text in my tweets.
+
+As a twitter reader,
+I want to be able to visit sites via shortened links,
+so that I can read interesting content.
+
+As an avid twitter poster,
+I want to be able to see how many times my subscribers visit my links
+so that I can learn what content they like.
 
 ## Dependencies
 
@@ -24,159 +33,19 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - Install all dependencies (using the `npm install` command).
 - Run the development web server using the `node express_server.js` command.
 
-# Project Description
-*** Project description taken directly from [Lighthouse Labs](http://lighthouselabs.ca/) ***
-## Goal
+## Final Product
 
-This four-day project will have you building a web app using Node. The app will allow users to shorten long URLs much like TinyURL.com and bit.ly do.
+The URLs page is where will be displayed the shortened URLs in a table. From there, each URL can be deleted, and the user can access edit the URL via the edit button.
+![Screenshot of the URLs page](./docs/myURLs.png)
 
-You will build an HTTP Server that handles requests from the browser (client). Along the way you'll get introduced to some more advanced JavaScript and Node concepts, and you'll also learn more about Express, a web framework which is very popular in the Node community.
+Each URL has its dedicated page through which the user can view the statistics, and edit the long URL.
+![Screenshot of the shortened URL page](./docs/urlShow.png)
 
-## Functional Requirements
-### User Stories
+A new short URL can be generated via the URL creation page.
+![Screenshot of the shortened URL creation page](./docs/createNew.png)
 
-As an avid twitter poster,
-I want to be able to shorten links
-so that I can fit more non-link text in my tweets.
+Users can login via the login page with their email and password.
+![Screenshot of the login page](./docs/login.png)
 
-As a twitter reader,
-I want to be able to visit sites via shortened links,
-so that I can read interesting content.
-
-(Stretch) As an avid twitter poster,
-I want to be able to see how many times my subscribers visit my links
-so that I can learn what content they like.
-
-## Display Requirements
-
-* Site Header:
-  * if a user is logged in, the header shows:
-    * the user's email
-    * a logout button which makes a POST request to` /logout`
-  * if a user is not logged in, the header shows:
-    * a link to the loggin page (`/login`)
-    * a link to the registration page (`/register`)
-
-## Behaviour Requirements
-
-* `GET /`
-  * if user is logged in:
-    * (Minor) redirect to `/urls`
-  * if user is not logged in:
-    * (Minor) redirect to `/login`
-
-* `GET /urls`
-  * if user is logged in:
-    * returns HTML with:
-    * the site header (see Display Requirements above)
-    * a list (or table) of URLs the user has created, each list item containing:
-      * a short URL
-      * the short URL's matching long URL
-      * an edit button which makes a GET request to `/urls/:id`
-      * a delete button which makes a POST request to `/urls/:id/delete`
-      * (Stretch) the date the short URL was created
-      * (Stretch) the number of times the short URL was visited
-      * (Stretch) the number number of unique visits for the short URL
-    * (Minor) a link to "Create a New Short Link" which makes a GET request to `/urls/new`
-  * if user is not logged in:
-    * returns HTML with a relevant error message
-
-* `GET /urls/new`
-  * if user is logged in:
-    * returns HTML with:
-    * the site header (see Display Requirements above)
-    * a form which contains:
-      * a text input field for the original (long) URL
-      * a submit button which makes a POST request to /urls
-  * if user is not logged in:
-    * redirects to the `/login` page
-
-* `GET /urls/:id`
-  * if user is logged in and owns the URL for the given ID:
-    * returns HTML with:
-    * the site header (see Display Requirements above)
-    * the short URL (for the given ID)
-    * a form which contains:
-    * the corresponding long URL
-    * an update button which makes a POST request to `/urls/:id`
-    * (Stretch) the date the short URL was created
-    * (Stretch) the number of times the short URL was visited
-    * (Stretch) the number of unique visits for the short URL
-  * if a URL for the given ID does not exist:
-    * (Minor) returns HTML with a relevant error message
-  * if user is not logged in:
-    * returns HTML with a relevant error message
-  * if user is logged in but does not own the URL with the given ID:
-    * returns HTML with a relevant error message
-
-* `GET /u/:id`
-  * if URL for the given ID exists:
-    * redirects to the corresponding long URL
-  * if URL for the given ID does not exist:
-    * (Minor) returns HTML with a relevant error message
-
-* `POST /urls`
-  * if user is logged in:
-    * generates a short URL, saves it, and associates it with the user
-    * redirects to `/urls/:id`, where `:id` matches the ID of the newly saved URL
-  * if user is not logged in:
-    * (Minor) returns HTML with a relevant error message
-
-* `POST /urls/:id`
-  * if user is logged in and owns the URL for the given ID:
-    * updates the URL
-    * redirects to `/urls`
-  * if user is not logged in:
-    * (Minor) returns HTML with a relevant error message
-  * if user is logged it but does not own the URL for the given ID:
-    * (Minor) returns HTML with a relevant error message
-
-* `POST /urls/:id/delete`
-  * if user is logged in and owns the URL for the given ID:
-    * deletes the URL
-    * redirects to `/urls`
-  * if user is not logged in:
-    * (Minor) returns HTML with a relevant error message
-  * if user is logged it but does not own the URL for the given ID:
-    * (Minor) returns HTML with a relevant error message
-
-* `GET /login`
-  * if user is logged in:
-    * (Minor) redirects to `/urls`
-  * if user is not logged in:
-    * returns HTML with:
-    * a form which contains:
-      * input fields for email and password
-      * submit button that makes a POST request to `/login`
-
-* `GET /register`
-  * if user is logged in:
-    * (Minor) redirects to `/urls`
-  * if user is not logged in:
-    * returns HTML with:
-    * a form which contains:
-      * input fields for email and password
-      * a register button that makes a POST request to `/register`
-
-* `POST /login`
-  * if email and password params match an existing user:
-    * sets a cookie
-    * redirects to `/urls`
-  * if email and password params don't match an existing user:
-    * returns HTML with a relevant error message
-
-* `POST /register`
-  * if email or password are empty:
-    * returns HTML with a relevant error message
-  * if email already exists:
-    * returns HTML with a relevant error message
-  * otherwise:
-    * creates a new user
-    * encrypts the new user's password with `bcrypt`
-    * sets a cookie
-    * redirects to `/urls`
-
-* POST /logout
-  * deletes cookie
-  * redirects to `/urls`
-
+Users can register via the registration page with their email and a new password.
+![Screenshot of the registration page](./docs/register.png)
