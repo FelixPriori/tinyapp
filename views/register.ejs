@@ -15,13 +15,16 @@
       <%- include('./partials/_header') %>
     </header>
 
-    <% if (fillError) { %> 
-      <p class="alert alert-danger">Error: please check that you have filled the fields correctly. </p>
-    <% } else if (emailError) { %>
-      <p class="alert alert-danger">Error: this email already exists. </p>
-    <% } %>  
-
     <main style="margin: 1em;">
+      <% if (fillError) { %> 
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <p class="alert alert-danger">Error: please check that you have filled the fields correctly. </p>
+        </div>
+      <% } else if (emailError) { %>
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <p class="alert alert-danger">Error: this email already exists. </p>
+        </div>
+      <% } %> 
       <h3>Create Account</h3>
       <form class="form" action="/register" method="POST">
         <div class="form-group mb-2">

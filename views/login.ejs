@@ -15,12 +15,16 @@
       <%- include('./partials/_header') %>
     </header>
 
-    <% if (loginError) { %> 
-      <p class="alert alert-danger">Error: something went wrong while attempting to log you in. Please try again. </p>
-    <% } else if (newUrlMsg) { %> 
-      <p class="alert alert-warning"> You must login before creating a new URL </p>
-    <% } %> 
     <main style="margin: 1em;">
+      <% if (loginError) { %> 
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <p class="alert alert-danger">Error: something went wrong while attempting to log you in. Please try again. </p>
+        </div>
+      <% } else if (newUrlMsg) { %> 
+        <div style="display: flex; align-items: center; justify-content: center;">
+          <p class="alert alert-warning"> You must login before creating a new URL </p>
+        </div>
+      <% } %> 
       <h3>Login</h3>
       <form class="form" action="/login" method="POST">
         <div class="form-group mb-2">
