@@ -10,7 +10,6 @@ const getUserByEmail = (email, users) => {
 
 // function which returns false if email already exists
 const checkEmail = (email, users) => {
-  // loops through users db
   for (const user in users) {
     if (users[user].email === email) {
       return false;
