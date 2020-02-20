@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-const { urlsByUser, generateRandomString, checkEmail, getUserByEmail } = require('./helpers');
+const { urlsByUser, generateRandomString, checkEmail, getUserByEmail, isNewVisitor } = require('./helpers');
 const app = express();
 const PORT = 8080;
 
@@ -24,19 +24,22 @@ const urlDatabase = {
     longURL: "http://www.lighthouselabs.ca", 
     userID: "20j4us", 
     date: "2020-2-20",
-    visits: 0
+    visits: 0,
+    visitors: []
   },
   "9sm5xK": { 
     longURL: "http://www.google.com", 
     userID: "20j4us", 
     date: "2020-2-20",
     visits: 0,
+    visitors: []
   },
   "32h4o1": { 
     longURL: "http://www.example.com", 
     userID: "h3ks3s",
     date: "2020-2-20",
     visits: 0,
+    visitors: []
   }
 };
 
@@ -110,14 +113,16 @@ app.get("/urls/:shortURL", (req, res) => {
   const user = req.session.userID ? users[req.session.userID] : undefined;
   const userID = user ? user.id : undefined;
   const urls = urlsByUser(urlDatabase, userID);
-  if (urls[req.params.shortURL]) {
+  const shortURL = req.params.shortURL;
+  if (urls[shortURL]) {
     // sets the database to templateVars variable
     let templateVars = {
       user,
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL,
-      date: urlDatabase[req.params.shortURL].date,
-      visits: urlDatabase[req.params.shortURL].visits,
+      shortURL,
+      longURL: urlDatabase[shortURL].longURL,
+      date: urlDatabase[shortURL].date,
+      visits: urlDatabase[shortURL].visits,
+      visitors: urlDatabase[shortURL].visitors,
       error: false
     };
     // renders the urls_show file with templateVars
@@ -170,23 +175,33 @@ app.get("/", (req, res) => {
   req.session.userID ? res.redirect("/urls/") : res.redirect("/login/");
 });
 
-// redirects the shortUrl to the longUrl (this is where the magic happens)
+// redirects the shortURL to the longUrl
+// everytime shortURL is visited, visits count is incremented
+// everytime shortURL is visited by new user, visitor is pushed to visitors array
+// if visitor is not a user, 'guest' is pushed to the array.
 app.get("/u/:shortURL", (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL]['visits']++;
-    // links the shortURL and longURL together
+  const shortURL = req.params.shortURL;
+  const userID = req.session.userID;
+  if (urlDatabase[shortURL]) {
+    urlDatabase[shortURL]['visits']++;
+    const urlVisitors = urlDatabase[shortURL]['visitors'];
+    if (isNewVisitor(urlVisitors, userID)) {
+      if (userID) {
+        urlDatabase[shortURL]['visitors'].push(userID);
+      } else {
+        urlDatabase[shortURL]['visitors'].push('guest');
+      }
+    }
     let linkedUrls = {
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL]['longURL']
+      shortURL: shortURL,
+      longURL: urlDatabase[shortURL]['longURL']
     };
-    // extract the longURL, puts it in its own variable
     const longURL = linkedUrls.longURL;
-    // redirects to the longUrl
     res.redirect(longURL);
   } else {
-    if (req.session.userID) {
-      const user = users[req.session.userID];
-      const urls = urlsByUser(urlDatabase, user.id);
+    if (userID) {
+      const user = users[userID];
+      const urls = urlsByUser(urlDatabase, userID);
       let templateVars = {
         error: true,
         loginMsg: false,
@@ -235,7 +250,8 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: req.session.userID,
     date,
-    visits: 0
+    visits: 0,
+    visitors: []
   };
   res.redirect('/urls/' + shortURL);
 });
