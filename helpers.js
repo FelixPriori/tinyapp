@@ -47,20 +47,4 @@ const urlsByUser = (database, userID) => {
   return urlsByUser;
 };
 
-// helper function, adds new user to db, returns id
-const addNewUser = (userData, users) => {
-  // random string of length 6 is set to id
-  const id = generateRandomString();
-  // newUser is declared as an object with id, email, password
-  const newUser = {
-    id,
-    email: userData.email,
-    password: userData.password
-  };
-  // this newUser is added to our db of users
-  users[id] = newUser
-  return users;
-};
-
-
-module.exports = { urlsByUser, generateRandomString, checkEmail, getUserByEmail, addNewUser };
+module.exports = { urlsByUser, generateRandomString, checkEmail, getUserByEmail, pickAlphaNum };
