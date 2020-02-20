@@ -12,7 +12,7 @@ const getUserByEmail = (email, users) => {
 const checkEmail = (email, users) => {
   // loops through users db
   for (const user in users) {
-    if (users[user].email === email){
+    if (users[user].email === email) {
       return false;
     }
   }
@@ -24,16 +24,16 @@ const pickAlphaNum = () => {
   const alphaNums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
   const randomNum = Math.floor(Math.random() * alphaNums.length);
   return alphaNums[randomNum];
-}
+};
 
 // returns a generated alpha-numeric string of length 6
-function generateRandomString() {
+const generateRandomString = () => {
   let output = '';
   for (let i = 1; i <= 6; i++) {
     output += pickAlphaNum();
   }
   return output;
-}
+};
 
 
 // returns only the urls object for the specified userID
