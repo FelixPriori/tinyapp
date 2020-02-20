@@ -3,23 +3,21 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
-const cookieSession = require('cookie-session')
-const uuid = require("uuid");
-  // const id = uuid().substr(0, 6);
+const cookieSession = require('cookie-session');
+const { urlsByUser, generateRandomString, checkEmail, getUserByEmail } = require('./helpers');
 const app = express();
 const PORT = 8080;
 app.use(cookieSession({
   name: 'session',
   keys: ['user_d'],
-
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
+
 
 // object database
 const urlDatabase = {
@@ -39,9 +37,9 @@ const users = {
     email: "priori@example.com", 
     password: bcrypt.hashSync("asd", 10)
   }
-}
+};
 
-// renders the 'create new URL page' only if used is logged in
+// renders the 'create new URL page' only if useer is logged in
 app.get("/urls/new", (req, res) => {
   if (req.session.user_id) {
     const user = users[req.session.user_id];
@@ -59,17 +57,6 @@ app.get("/urls/new", (req, res) => {
     res.render('login', templateVars);
   }
 });
-
-// returns only the urls object for the specified userID
-const urlsByUser = (database, userID) => {
-  const urlsByUser = {};
-  for (const url in database) {
-    if (database[url].userID === userID) {
-      urlsByUser[url] = database[url];
-    }
-  }
-  return urlsByUser;
-};
 
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
@@ -123,7 +110,7 @@ app.get("/urls/:shortURL", (req, res) => {
       user,
       urls 
     };
-    res.render('urls_index', templateVars);
+    res.status(400).render('urls_index', templateVars);
   }
 });
 
@@ -191,22 +178,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect('/urls');
 });
 
-// returns a random alpha-numeric string from list
-const pickAlphaNum = () => {
-  const alphaNums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-  const randomNum = Math.floor(Math.random() * alphaNums.length);
-  return alphaNums[randomNum];
-}
-
-// returns a generated alpha-numeric string of length 6
-function generateRandomString() {
-  let output = '';
-  for (let i = 1; i <= 6; i++) {
-    output += pickAlphaNum();
-  }
-  return output;
-}
-
 // new shortURL creation
 app.post("/urls", (req, res) => {
   //creates new short URL with a randomly generated string
@@ -236,16 +207,6 @@ app.post('/urls/:shortURL/update', (req, res) => {
   res.redirect('/urls/' + req.params.shortURL);
 });
 
-// function uses email address to return the user from users db
-const getUserByEmail = (email, users) => {
-  for (let user in users) {
-    if (users[user].email === email) {
-      return users[user];
-    }
-  }
-  return false;
-};
-
 // login with user email & password
 app.post('/login', (req, res) => {
   // fetch user with email
@@ -264,7 +225,7 @@ app.post('/login', (req, res) => {
         newUrlMsg: false,
         user
       };
-      res.render("login", templateVars);
+      res.status(400).render("login", templateVars);
     }
   } else {
     const user = users[req.session.user_id];
@@ -273,7 +234,7 @@ app.post('/login', (req, res) => {
       newUrlMsg: false,
       user
     };
-    res.render("login", templateVars);
+    res.status(401).render("login", templateVars);
   }
 });
 
@@ -284,6 +245,8 @@ app.post('/logout', (req, res) => {
 });
 
 // helper function, adds new user to db, returns id
+// this helper function interacts with users database directly
+// therefore I did not want to switch it to helpers.js
 const addNewUser = (userData) => {
   // random string of length 6 is set to id
   const id = generateRandomString();
@@ -297,17 +260,6 @@ const addNewUser = (userData) => {
   users[id] = newUser;
   // id is returned to be used for cookies
   return id;
-}
-
-// function which returns false if email already exists
-const checkEmail = email => {
-  // loops through users db
-  for (const user in users) {
-    if (users[user].email === email){
-      return false;
-    }
-  }
-  return true;
 };
 
 // registers user to db and sends cookie
@@ -320,10 +272,10 @@ app.post('/register', (req, res) => {
       password: bcrypt.hashSync(req.body.password, 10) 
     };
     // checks if email already exists
-    if (checkEmail(userData.email)) {
+    if (checkEmail(userData.email, users)) {
       // user data is passed to function addNewUser, which adds to db, and returns the id
       // id is then set to to the cookie
-      req.session.user_id = addNewUser(userData)
+      req.session.user_id = addNewUser(userData);
       // lastly, page is redirected to urls
       res.redirect('/urls');
     } else {
@@ -334,7 +286,7 @@ app.post('/register', (req, res) => {
         fillError: false,
         user
       };
-      res.render("register", templateVars);
+      res.status(400).render("register", templateVars);
     }
   } else {
     // error message if user password or email is not entered correctly
@@ -344,7 +296,7 @@ app.post('/register', (req, res) => {
       fillError: true,
       user
     };
-    res.render("register", templateVars);
+    res.status(400).render("register", templateVars);
   }
 });
 
