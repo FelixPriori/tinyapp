@@ -46,4 +46,13 @@ const urlsByUser = (database, userID) => {
   return urlsByUser;
 };
 
-module.exports = { urlsByUser, generateRandomString, checkEmail, getUserByEmail, pickAlphaNum };
+const isNewVisitor = (visitors, userID) => {
+  for (const visitor of visitors) {
+    if (visitor === userID) {
+      return false
+    }
+  }
+  return true;
+};
+
+module.exports = { urlsByUser, generateRandomString, checkEmail, getUserByEmail, pickAlphaNum, isNewVisitor };
