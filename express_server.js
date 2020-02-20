@@ -18,12 +18,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
-
 // databases --------------------------------|
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "20j4us" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us" },
-  "32h4o1": { longURL: "http://www.example.com", userID: "h3ks3s" }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "20j4us", date: "2020-2-20" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us", date: "2020-2-20" },
+  "32h4o1": { longURL: "http://www.example.com", userID: "h3ks3s", date: "2020-2-20" }
 };
 
 const users = {
@@ -102,6 +101,7 @@ app.get("/urls/:shortURL", (req, res) => {
       user,
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
+      date: urlDatabase[req.params.shortURL].date,
       error: false
     };
     // renders the urls_show file with templateVars
@@ -156,7 +156,7 @@ app.get("/", (req, res) => {
 
 // redirects the shortUrl to the longUrl (this is where the magic happens)
 app.get("/u/:shortURL", (req, res) => {
-  if(urlDatabase[req.params.shortURL]) {
+  if (urlDatabase[req.params.shortURL]) {
     // links the shortURL and longURL together
     let linkedUrls = {
       shortURL: req.params.shortURL,
@@ -212,10 +212,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // new shortURL creation, adds new url to database with associated
 // userID, then redirects to the new short url's page.
 app.post("/urls", (req, res) => {
+  const date = new Date().toLocaleDateString()
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.userID
+    userID: req.session.userID,
+    date
   };
   res.redirect('/urls/' + shortURL);
 });
@@ -281,7 +283,7 @@ const addNewUser = (userData) => {
   return id;
 };
 
-// Registration process: if fields are populated correctly, 
+// Registration process: if fields are populated correctly,
 // Password is hashed, user is assigned a new ID, and is added to db.
 // if not, or if email exists, user sent back to reg page with error msg.
 app.post('/register', (req, res) => {
