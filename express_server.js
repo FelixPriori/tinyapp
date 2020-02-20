@@ -9,7 +9,7 @@ const app = express();
 const PORT = 8080;
 app.use(cookieSession({
   name: 'session',
-  keys: ['user_d'],
+  keys: ['userID'],
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
@@ -26,29 +26,29 @@ const urlDatabase = {
   "32h4o1": { longURL: "http://www.example.com", userID: "h3ks3s" }
 };
 
-const users = { 
+const users = {
   "20j4us": {
-    id: "20j4us", 
-    email: "felix@example.com", 
+    id: "20j4us",
+    email: "felix@example.com",
     password: bcrypt.hashSync("123", 10)
   },
   "h3ks3s": {
-    id: "h3ks3s", 
-    email: "priori@example.com", 
+    id: "h3ks3s",
+    email: "priori@example.com",
     password: bcrypt.hashSync("asd", 10)
   }
 };
 
 // renders the 'create new URL page' only if useer is logged in
 app.get("/urls/new", (req, res) => {
-  if (req.session.user_id) {
-    const user = users[req.session.user_id];
+  if (req.session.userID) {
+    const user = users[req.session.userID];
     let templateVars = {
       user
-    }
+    };
     res.render("urls_new", templateVars);
   } else {
-    const user = users[req.session.user_id];
+    const user = users[req.session.userID];
     let templateVars = {
       loginError: false,
       newUrlMsg: true,
@@ -61,24 +61,24 @@ app.get("/urls/new", (req, res) => {
 // renders the 'My URLs' page
 app.get('/urls', (req, res) => {
   // checks if user is logged in
-  if (users[req.session.user_id]){
-    const user = users[req.session.user_id];
+  if (users[req.session.userID]) {
+    const user = users[req.session.userID];
     const urls = urlsByUser(urlDatabase, user.id);
-    let templateVars = { 
+    let templateVars = {
       error: false,
       loginMsg: false,
-      user, 
-      urls 
+      user,
+      urls
     };
     // renders only the urls for that userID.
     res.render("urls_index", templateVars);
   } else {
     // if the user is not logged in
-    const user = users[req.session.user_id];
-    let templateVars = { 
+    const user = users[req.session.userID];
+    let templateVars = {
       error: false,
       loginMsg: true,
-      user, 
+      user,
       urls: undefined
     };
     // renders a msg telling user to login instead of urls
@@ -89,16 +89,16 @@ app.get('/urls', (req, res) => {
 // renders the urls_show page
 app.get("/urls/:shortURL", (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.session.user_id ? users[req.session.user_id] : undefined;
+  const user = req.session.userID ? users[req.session.userID] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
   const urls = urlsByUser(urlDatabase, userID);
-  if (urls[req.params.shortURL]){
+  if (urls[req.params.shortURL]) {
     // sets the database to templateVars variable
     let templateVars = {
       user,
-      shortURL: req.params.shortURL, 
+      shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
       error: false
     };
@@ -108,7 +108,7 @@ app.get("/urls/:shortURL", (req, res) => {
     let templateVars = {
       error: true,
       user,
-      urls 
+      urls
     };
     res.status(400).render('urls_index', templateVars);
   }
@@ -116,25 +116,25 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // renders /register page with templateVars
 app.get("/register", (req, res) => {
-  if (req.session.user_id) {
+  if (req.session.userID) {
     res.redirect('/urls');
   } else {
-    const user = users[req.session.user_id];
+    const user = users[req.session.userID];
     let templateVars = {
       emailError: false,
       fillError: false,
       user,
-    }
+    };
     res.render("register", templateVars);
   }
 });
 
 // renders /login page with templateVars
 app.get("/login", (req, res) => {
-  if (req.session.user_id) {
+  if (req.session.userID) {
     res.redirect('/urls');
   } else {
-    const user = users[req.session.user_id];
+    const user = users[req.session.userID];
     let templateVars = {
       loginError: false,
       newUrlMsg: false,
@@ -142,19 +142,19 @@ app.get("/login", (req, res) => {
     };
     res.render("login", templateVars);
   }
-})
+});
 
 // if user is logged in, redirects to urls page, else redirects to login page.
 app.get("/", (req, res) => {
-  req.session.user_id ? res.redirect("/urls/") : res.redirect("/login/");
+  req.session.userID ? res.redirect("/urls/") : res.redirect("/login/");
 });
 
 // redirects the shortUrl to the longUrl (this is where the magic happens)
 app.get("/u/:shortURL", (req, res) => {
   // links the shortURL and longURL together
-  let linkedUrls = { 
-    shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL]['longURL'] 
+  let linkedUrls = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]['longURL']
   };
   // extract the longURL, puts it in its own variable
   const longURL = linkedUrls.longURL;
@@ -175,7 +175,7 @@ app.get("/urls.json", (req, res) => {
 // by pressing the delete button on the /urls page, deletes the url from database
 app.post("/urls/:shortURL/delete", (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.session.user_id ? users[req.session.user_id] : undefined;
+  const user = req.session.userID ? users[req.session.userID] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
@@ -193,7 +193,7 @@ app.post("/urls", (req, res) => {
   // adds the long url submited to the object as value with the short url as key.
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: req.session.userID
   };
   // redirects to a page with new short url
   res.redirect('/urls/' + shortURL);
@@ -202,7 +202,7 @@ app.post("/urls", (req, res) => {
 // where the actual editing of the shortURL happens
 app.post('/urls/:shortURL/update', (req, res) => {
   // checks if user is logged in, if so, assign user object to const user
-  const user = req.session.user_id ? users[req.session.user_id] : undefined;
+  const user = req.session.userID ? users[req.session.userID] : undefined;
   // if user is logged in, assigns its id to userID
   const userID = user ? user.id : undefined;
   // urls will only be defined if last two checks passed
@@ -224,10 +224,10 @@ app.post('/login', (req, res) => {
     // if user exists, check user password
     if (bcrypt.compareSync(req.body.password, user.password)) {
       // if password is good, assign cookie with user.id
-      req.session.user_id = user.id;
+      req.session.userID = user.id;
       res.redirect('/urls');
     } else {
-      const user = users[req.session.user_id];
+      const user = users[req.session.userID];
       let templateVars = {
         loginError: true,
         newUrlMsg: false,
@@ -236,7 +236,7 @@ app.post('/login', (req, res) => {
       res.status(400).render("login", templateVars);
     }
   } else {
-    const user = users[req.session.user_id];
+    const user = users[req.session.userID];
     let templateVars = {
       loginError: true,
       newUrlMsg: false,
@@ -277,18 +277,18 @@ app.post('/register', (req, res) => {
     // entered data is set to variable userData
     const userData = {
       email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 10) 
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     // checks if email already exists
     if (checkEmail(userData.email, users)) {
       // user data is passed to function addNewUser, which adds to db, and returns the id
       // id is then set to to the cookie
-      req.session.user_id = addNewUser(userData);
+      req.session.userID = addNewUser(userData);
       // lastly, page is redirected to urls
       res.redirect('/urls');
     } else {
       // error message if email already exists
-      const user = users[req.session.user_id];
+      const user = users[req.session.userID];
       let templateVars = {
         emailError: true,
         fillError: false,
@@ -298,7 +298,7 @@ app.post('/register', (req, res) => {
     }
   } else {
     // error message if user password or email is not entered correctly
-    const user = users[req.session.user_id];
+    const user = users[req.session.userID];
     let templateVars = {
       userError: false,
       fillError: true,
