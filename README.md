@@ -1,3 +1,5 @@
+This app is made by Felix Rioux Sabourin, in February 2020, on week 3 of [Lighthouse Labs](http://lighthouselabs.ca/)' 12 weeks web bootcamp. 
+
 # Project Description
 *** Project description taken directly from [Lighthouse Labs](http://lighthouselabs.ca/) ***
 ## Goal
@@ -28,7 +30,7 @@ so that I can learn what content they like.
     * the user's email
     * a logout button which makes a POST request to` /logout`
   * if a user is not logged in, the header shows:
-    * gin page (`/login`)
+    * a link to the loggin page (`/login`)
     * a link to the registration page (`/register`)
 
 ## Behaviour Requirements
@@ -104,7 +106,8 @@ so that I can learn what content they like.
     * (Minor) returns HTML with a relevant error message
   * if user is logged it but does not own the URL for the given ID:
     * (Minor) returns HTML with a relevant error message
-  * POST `/urls/:id/delete`
+
+* `POST /urls/:id/delete`
   * if user is logged in and owns the URL for the given ID:
     * deletes the URL
     * redirects to `/urls`

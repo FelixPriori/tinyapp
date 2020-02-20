@@ -116,29 +116,37 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // renders /register page with templateVars
 app.get("/register", (req, res) => {
-  const user = users[req.session.user_id];
-  let templateVars = {
-    emailError: false,
-    fillError: false,
-    user,
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    const user = users[req.session.user_id];
+    let templateVars = {
+      emailError: false,
+      fillError: false,
+      user,
+    }
+    res.render("register", templateVars);
   }
-  res.render("register", templateVars);
 });
 
 // renders /login page with templateVars
 app.get("/login", (req, res) => {
-  const user = users[req.session.user_id];
-  let templateVars = {
-    loginError: false,
-    newUrlMsg: false,
-    user
-  };
-  res.render("login", templateVars);
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    const user = users[req.session.user_id];
+    let templateVars = {
+      loginError: false,
+      newUrlMsg: false,
+      user
+    };
+    res.render("login", templateVars);
+  }
 })
 
-// home page, redirects to /urls for now
+// if user is logged in, redirects to urls page, else redirects to login page.
 app.get("/", (req, res) => {
-  res.redirect("/urls/");
+  req.session.user_id ? res.redirect("/urls/") : res.redirect("/login/");
 });
 
 // redirects the shortUrl to the longUrl (this is where the magic happens)
