@@ -196,14 +196,14 @@ app.get("/u/:shortURL", (req, res) => {
     // everytime shortURL is visited, visits count is incremented
     urlDatabase[shortURL]['visits']++;
     const urlVisitors = urlDatabase[shortURL]['visitors'];
-    if (isNewVisitor(urlVisitors, userID)) {
+    // if visitor is not a user & doesn't have visitor cookie
+    if (!req.session.visitor) {
+      req.session.visitor = generateRandomString();
+    }
+    const visitor = req.session.visitor;
+    if (isNewVisitor(urlVisitors, visitor)) {
       // everytime shortURL is visited by new user, visitor is pushed to visitors array
-      if (userID) {
-        urlDatabase[shortURL]['visitors'].push(userID);
-      } else {
-        // if visitor is not a user, 'guest' is pushed to the array.
-        urlDatabase[shortURL]['visitors'].push('guest');
-      }
+      urlDatabase[shortURL]['visitors'].push(visitor);
     }
     // redirects the shortURL to the longUrl
     let linkedUrls = {
@@ -293,6 +293,7 @@ app.post('/login', (req, res) => {
     if (bcrypt.compareSync(req.body.password, user.password)) {
       // if password matches, redirects to /urls
       req.session.userID = user.id;
+      req.session.visitor = user.id;
       res.redirect('/urls');
     } else {
       // if password doesn't match, display login error
@@ -318,7 +319,7 @@ app.post('/login', (req, res) => {
 
 // clicking logout will sign out user by clearing cookies.
 app.post('/logout', (req, res) => {
-  req.session = null;
+  req.session.userID = null;
   res.redirect('/urls');
 });
 
@@ -347,6 +348,7 @@ app.post('/register', (req, res) => {
     if (checkEmail(userData.email, users)) {
       // if email does not already exist, add new user
       req.session.userID = addNewUser(userData);
+      req.session.visitor = req.session.userID;
       res.redirect('/urls');
     } else {
       // if email exists, send email error
