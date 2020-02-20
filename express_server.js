@@ -276,7 +276,7 @@ app.post('/urls/:shortURL/update', (req, res) => {
   if (urls[req.params.shortURL]) {
     urlDatabase[req.params.shortURL]['longURL'] = req.body.editLongUrl;
   }
-  res.redirect('/urls/' + req.params.shortURL);
+  res.redirect('/urls');
 });
 
 // Login of user: checks if user exist w/ email, then checks password
