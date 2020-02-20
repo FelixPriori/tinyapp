@@ -1,4 +1,28 @@
-This app is made by Felix Rioux Sabourin, in February 2020, on week 3 of [Lighthouse Labs](http://lighthouselabs.ca/)' 12 weeks web bootcamp. 
+# TinyApp Project
+
+TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly). It was made by Felix Rioux Sabourin in February 2020, on week 3 of [Lighthouse Labs](http://lighthouselabs.ca/)' 12 weeks web bootcamp. 
+
+## Final Product
+
+![Screenshot of the URLs page](./docs/myURLs.png)
+![Screenshot of the shortened URL page](./docs/urlShow.png)
+![Screenshot of the shortened URL creation page](./docs/createNew.png)
+![Screenshot of the login page](./docs/login.png)
+![Screenshot of the registration page](./docs/register.png)
+
+## Dependencies
+
+- Node.js
+- Express
+- EJS
+- bcrypt
+- body-parser
+- cookie-session
+
+## Getting Started
+
+- Install all dependencies (using the `npm install` command).
+- Run the development web server using the `node express_server.js` command.
 
 # Project Description
 *** Project description taken directly from [Lighthouse Labs](http://lighthouselabs.ca/) ***
