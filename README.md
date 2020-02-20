@@ -27,6 +27,7 @@ so that I can learn what content they like.
 - bcrypt
 - body-parser
 - cookie-session
+- method-override
 
 ## Getting Started
 
