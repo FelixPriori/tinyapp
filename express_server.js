@@ -1,9 +1,9 @@
 // setting up the file requirements
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const { urlsByUser, generateRandomString, checkEmail, getUserByEmail, isNewVisitor } = require('./helpers');
 const app = express();
 const PORT = 8080;
@@ -14,8 +14,8 @@ app.use(cookieSession({
   keys: ['userID'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
+app.use(methodOverride("_method"))
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
 app.set("view engine", "ejs");
 
 // databases
@@ -248,7 +248,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 // by pressing the delete button on the /urls page, deletes the url from database (only if user is logged in)
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const user = req.session.userID ? users[req.session.userID] : undefined;
   const userID = user ? user.id : undefined;
   const urls = urlsByUser(urlDatabase, userID);
@@ -274,7 +274,7 @@ app.post("/urls", (req, res) => {
 });
 
 // If user is logged in, the url can be updated in the database
-app.post('/urls/:shortURL/update', (req, res) => {
+app.put('/urls/:shortURL', (req, res) => {
   const user = req.session.userID ? users[req.session.userID] : undefined;
   const userID = user ? user.id : undefined;
   const urls = urlsByUser(urlDatabase, userID);
