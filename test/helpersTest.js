@@ -3,13 +3,13 @@ const { urlsByUser, generateRandomString, checkEmail, getUserByEmail,pickAlphaNu
 
 const testUsers = {
   "6hj20A": {
-    id: "6hj20A", 
-    email: "user@example.com", 
+    id: "6hj20A",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
   "ls29dJ1": {
-    id: "ls29dJ1", 
-    email: "user2@example.com", 
+    id: "ls29dJ1",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
 };
@@ -22,11 +22,11 @@ const testDatabase = {
 
 describe('getUserByEmail', () => {
   it('should return a user with valid email', () => {
-    const user = getUserByEmail("user@example.com", testUsers)
+    const user = getUserByEmail("user@example.com", testUsers);
     const expectedOutput = {
-      id: "6hj20A", 
-      email: "user@example.com", 
-      password: "purple-monkey-dinosaur" 
+      id: "6hj20A",
+      email: "user@example.com",
+      password: "purple-monkey-dinosaur"
     };
     assert.deepEqual(user, expectedOutput);
   });
@@ -59,7 +59,7 @@ describe("generateRandomString", () => {
   it('should return a string', () => {
     const string = generateRandomString();
     assert.equal(typeof(string), 'string');
-  })
+  });
 });
 
 describe("pickAlphaNum", () => {
@@ -79,7 +79,7 @@ describe("checkEmail", () => {
     assert.equal(checkEmail(email, testUsers), false);
   });
   it('returns true if email is not in the db', () => {
-    const email = 'thisemaildoesnot@exist.com'
+    const email = 'thisemaildoesnot@exist.com';
     assert.equal(checkEmail(email, testUsers), true);
-  })
+  });
 });
