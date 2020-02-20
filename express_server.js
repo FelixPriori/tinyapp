@@ -20,9 +20,24 @@ app.set("view engine", "ejs");
 
 // databases --------------------------------|
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "20j4us", date: "2020-2-20" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "20j4us", date: "2020-2-20" },
-  "32h4o1": { longURL: "http://www.example.com", userID: "h3ks3s", date: "2020-2-20" }
+  "b2xVn2": { 
+    longURL: "http://www.lighthouselabs.ca", 
+    userID: "20j4us", 
+    date: "2020-2-20",
+    visits: 0
+  },
+  "9sm5xK": { 
+    longURL: "http://www.google.com", 
+    userID: "20j4us", 
+    date: "2020-2-20",
+    visits: 0,
+  },
+  "32h4o1": { 
+    longURL: "http://www.example.com", 
+    userID: "h3ks3s",
+    date: "2020-2-20",
+    visits: 0,
+  }
 };
 
 const users = {
@@ -102,6 +117,7 @@ app.get("/urls/:shortURL", (req, res) => {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
       date: urlDatabase[req.params.shortURL].date,
+      visits: urlDatabase[req.params.shortURL].visits,
       error: false
     };
     // renders the urls_show file with templateVars
@@ -157,6 +173,7 @@ app.get("/", (req, res) => {
 // redirects the shortUrl to the longUrl (this is where the magic happens)
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL]['visits']++;
     // links the shortURL and longURL together
     let linkedUrls = {
       shortURL: req.params.shortURL,
@@ -217,7 +234,8 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.session.userID,
-    date
+    date,
+    visits: 0
   };
   res.redirect('/urls/' + shortURL);
 });
